@@ -1,4 +1,4 @@
-import { Component, ElementRef, OnInit, ViewChild } from '@angular/core';
+import { Component, ElementRef, HostListener, OnInit, ViewChild } from '@angular/core';
 import { FormControl } from '@angular/forms';
 import { Todo } from 'src/app/core/interfaces/todo.interface';
 
@@ -9,6 +9,12 @@ import { Todo } from 'src/app/core/interfaces/todo.interface';
 export class HomeComponent implements OnInit {
   @ViewChild('todoCreator') input!: ElementRef<HTMLInputElement>;
   @ViewChild('editing') inputEditing!: ElementRef<HTMLInputElement>;
+
+  @HostListener('document:keydown.escape')
+  handleEsc() {
+    const todoEditing = this.todos.findIndex(todo => todo.isEditingMode);
+    this.todos[todoEditing].isEditingMode = false;
+  }
 
   public newTodo = new FormControl();
 
@@ -62,6 +68,19 @@ export class HomeComponent implements OnInit {
       }
     }
   );
+  }
+
+  activateDeactivateEditingMode(todo: Todo, state: boolean) {
+    todo.isEditingMode = state;
+    this.inputEditing.nativeElement.focus();
+  }
+
+  deleteTodo(todoIndex: number) {
+    this.todos.splice(todoIndex, 1);
+  }
+
+  clearCompletedTodos() {
+    this.todos = this.todos.filter(todo => !todo.completed);
   }
 
 }
