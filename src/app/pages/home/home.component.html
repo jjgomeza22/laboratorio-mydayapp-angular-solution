@@ -4,45 +4,44 @@
       <h1>My Day</h1>
       <p>All my tasks in one place</p>
       <input
+        #todoCreator
         class="new-todo"
         placeholder="Type new todo"
         autofocus
         type="text"
+        [formControl]="newTodo"
+        (keyup.enter)="addNewTodo()"
       />
     </div>
   </header>
   <div class="container todoapp-wrapper">
     <!-- This section should be hidden by default and shown when there are todos -->
-    <section class="main">
+    <section class="main" *ngIf="todos.length !== 0">
       <ul class="todo-list">
-        <li class="completed">
-          <div class="view">
-            <input class="toggle" type="checkbox" checked />
-            <label>Learn JavaScript</label>
-            <button class="destroy"></button>
-          </div>
-          <input class="edit" value="Learn JavaScript" />
-        </li>
-        <li>
-          <div class="view">
-            <input class="toggle" type="checkbox" />
-            <label>Buy a unicorn</label>
-            <button class="destroy"></button>
-          </div>
-          <input class="edit" value="Buy a unicorn" />
-        </li>
-        <li class="editing">
-          <div class="view">
-            <input class="toggle" type="checkbox" />
-            <label>Make dishes</label>
-            <button class="destroy"></button>
-          </div>
-          <input class="edit" value="Make dishes" />
-        </li>
+        <ng-container *ngFor="let todo of todos; index as i;">
+          <li
+            [class.editing]="todo.isEditingMode"
+            [ngClass]="[
+              todo.completed ? 'completed' : ''
+            ]"
+          >
+            <div class="view">
+              <input
+                class="toggle"
+                type="checkbox"
+                [checked]="todo.completed"
+                (change)="handleTodoState($event, todo)"
+              />
+              <label (dblclick)="todo.isEditingMode = true; inputEditing.nativeElement.focus()"> {{ todo.title }} </label>
+              <button class="destroy"></button>
+            </div>
+            <input #editing class="edit" [value]="todo.title" (keyup.enter)="updateTitle($event, todo)"/>
+          </li>
+        </ng-container>
       </ul>
     </section>
     <!-- This footer should be hidden by default and shown when there are todos -->
-    <footer class="footer">
+    <footer class="footer" *ngIf="todos.length !== 0">
       <!-- This should be `0 items left` by default -->
       <span class="todo-count"><strong>0</strong> item left</span>
       <!-- Remove this if you don't implement routing -->
