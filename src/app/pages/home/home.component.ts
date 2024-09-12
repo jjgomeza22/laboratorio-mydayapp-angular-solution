@@ -1,6 +1,7 @@
 import { Component, ElementRef, HostListener, OnInit, ViewChild } from '@angular/core';
 import { FormControl } from '@angular/forms';
 import { Todo } from 'src/app/core/interfaces/todo.interface';
+import { getValueFromLocaStorage, setValueInLocalStorage } from 'src/app/core/utils/localstorage.util';
 
 @Component({
   selector: 'app-home',
@@ -16,20 +17,15 @@ export class HomeComponent implements OnInit {
     this.todos[todoEditing].isEditingMode = false;
   }
 
-  public newTodo = new FormControl();
+  private readonly LOCAL_STORAGE_NAME = 'mydayapp-angular';
 
-  public todos: Todo[] = [
-    {
-      id: '0',
-      title: 'comer',
-      completed: false,
-      isEditingMode: false
-    }
-  ];
+  public newTodo = new FormControl();
+  public todos: Todo[] = [];
 
   constructor() { }
 
   ngOnInit(): void {
+    this.todos = getValueFromLocaStorage<Todo[]>(this.LOCAL_STORAGE_NAME, []);
   }
 
   addNewTodo() {
@@ -42,6 +38,7 @@ export class HomeComponent implements OnInit {
       };
 
       this.todos.push(newTodo);
+      this.updateLocalStorage();
       this.newTodo.setValue(null);
       this.input.nativeElement.focus();
     }
@@ -55,6 +52,7 @@ export class HomeComponent implements OnInit {
         }
       }
     );
+    this.updateLocalStorage();
   }
 
   updateTitle(event: Event, todoToChange: Todo) {
@@ -77,10 +75,15 @@ export class HomeComponent implements OnInit {
 
   deleteTodo(todoIndex: number) {
     this.todos.splice(todoIndex, 1);
+    this.updateLocalStorage();
   }
 
   clearCompletedTodos() {
     this.todos = this.todos.filter(todo => !todo.completed);
+    this.updateLocalStorage();
   }
 
+  private updateLocalStorage(): void {
+    setValueInLocalStorage(this.LOCAL_STORAGE_NAME, JSON.stringify(this.todos));
+  }
 }
