@@ -1,5 +1,6 @@
 import { Component, ElementRef, HostListener, OnInit, ViewChild } from '@angular/core';
 import { FormControl } from '@angular/forms';
+import { ActivatedRoute, Router } from '@angular/router';
 import { Todo } from 'src/app/core/interfaces/todo.interface';
 import { getValueFromLocaStorage, setValueInLocalStorage } from 'src/app/core/utils/localstorage.util';
 
@@ -21,11 +22,25 @@ export class HomeComponent implements OnInit {
 
   public newTodo = new FormControl();
   public todos: Todo[] = [];
+  public todosToShow: Todo[] = [];
 
-  constructor() { }
+  constructor(
+    private route: ActivatedRoute,
+    private router: Router
+  ) { }
 
   ngOnInit(): void {
     this.todos = getValueFromLocaStorage<Todo[]>(this.LOCAL_STORAGE_NAME, []);
+
+    this.route.url.subscribe(params => {
+      const filterBy = params[0].path;
+      if (filterBy === 'pending') {
+        this.todos = this.todos.filter(todo => !todo.completed);
+      } else if (filterBy === 'completed') {
+        this.todos = this.todos.filter(todo => todo.completed);
+      }
+    });
+
   }
 
   addNewTodo() {
